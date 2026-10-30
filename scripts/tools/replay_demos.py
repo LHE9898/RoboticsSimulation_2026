@@ -38,12 +38,20 @@ parser.add_argument(
     default=False,
     help="Enable Pinocchio.",
 )
+parser.add_argument("--video", action="store_true", default=False, help="Record videos of the replayed episodes.")
+parser.add_argument(
+    "--video_folder", type=str, default="videos/replay", help="Folder where the recorded videos are saved."
+)
 
 # append AppLauncher cli args
 AppLauncher.add_app_launcher_args(parser)
 # parse the arguments
 args_cli = parser.parse_args()
 # args_cli.headless = True
+
+# always enable cameras to record video
+if args_cli.video:
+    args_cli.enable_cameras = True
 
 if args_cli.enable_pinocchio:
     # Import pinocchio before AppLauncher to force the use of the version installed by IsaacLab and not the one installed by Isaac Sim
@@ -114,6 +122,19 @@ def compare_states(state_from_dataset, runtime_state, runtime_env_index) -> (boo
     return states_matched, output_log
 
 
+def save_video(frames: list, file_path: str, fps: float):
+    """Write the collected RGB frames to an mp4 file."""
+    try:
+        from moviepy import ImageSequenceClip
+    except ImportError:
+        from moviepy.video.io.ImageSequenceClip import ImageSequenceClip
+
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    clip = ImageSequenceClip(frames, fps=fps)
+    clip.write_videofile(file_path, logger=None)
+    print(f"[INFO] Saved video: {file_path}")
+
+
 def main():
     """Replay episodes loaded from a file."""
     global is_paused
@@ -148,7 +169,12 @@ def main():
     env_cfg.terminations = {}
 
     # create environment from loaded config
-    env = gym.make(args_cli.task, cfg=env_cfg).unwrapped
+    env = gym.make(env_name, cfg=env_cfg, render_mode="rgb_array" if args_cli.video else None).unwrapped
+
+    # video recording state (one video per episode when num_envs == 1, otherwise one video for the whole replay)
+    video_frames = []
+    video_name = "replay"
+    video_fps = 1.0 / env.step_dt
 
     teleop_interface = Se3Keyboard(Se3KeyboardCfg(pos_sensitivity=0.1, rot_sensitivity=0.1))
     teleop_interface.add_callback("N", play_cb)
@@ -195,6 +221,13 @@ def main():
                             next_episode_index = None
 
                         if next_episode_index is not None:
+                            if args_cli.video and num_envs == 1:
+                                if video_frames:
+                                    save_video(
+                                        video_frames, os.path.join(args_cli.video_folder, f"{video_name}.mp4"), video_fps
+                                    )
+                                video_frames = []
+                                video_name = f"episode_{next_episode_index}"
                             replayed_episode_count += 1
                             print(f"{replayed_episode_count :4}: Loading #{next_episode_index} episode to env_{env_id}")
                             episode_data = dataset_file_handler.load_episode(
@@ -219,6 +252,8 @@ def main():
                         env.sim.render()
                         continue
                 env.step(actions)
+                if args_cli.video and has_next_action:
+                    video_frames.append(env.render())
 
                 if state_validation_enabled:
                     state_from_dataset = env_episode_data_map[0].get_next_state()
@@ -235,6 +270,9 @@ def main():
                             print("\t- mismatched.")
                             print(comparison_log)
             break
+    # Save the last (or the only) recorded video
+    if args_cli.video and video_frames:
+        save_video(video_frames, os.path.join(args_cli.video_folder, f"{video_name}.mp4"), video_fps)
     # Close environment after replay in complete
     plural_trailing_s = "s" if replayed_episode_count > 1 else ""
     print(f"Finished replaying {replayed_episode_count} episode{plural_trailing_s}.")

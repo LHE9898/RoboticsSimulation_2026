@@ -25,6 +25,7 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 
 from isaaclab_tasks.manager_based.manipulation.place import mdp as place_mdp
+from isaaclab_tasks.manager_based.manipulation.place.mdp.grasp_feat import grasp_err_obs, place_err_obs
 from isaaclab_tasks.manager_based.manipulation.stack import mdp
 from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
 from isaaclab_tasks.manager_based.manipulation.stack.stack_env_cfg import ObjectTableSceneCfg
@@ -109,6 +110,30 @@ class ObservationsCfg:
         eef_pos = ObsTerm(func=mdp.ee_frame_pose_in_base_frame, params={"return_key": "pos"})
         eef_quat = ObsTerm(func=mdp.ee_frame_pose_in_base_frame, params={"return_key": "quat"})
         gripper_pos = ObsTerm(func=mdp.gripper_pos)
+        # symmetry-aware EE -> grasp target error (6D); must match tools_c/add_grasp_err_to_hdf5.py
+        # frame="base": RMPFlow relative mode composes rotations as R_delta @ R_ee (apply_delta_pose)
+        grasp_err = ObsTerm(
+            func=grasp_err_obs,
+            params={
+                "offset_path": os.path.join(os.path.dirname(__file__), "grasp_offset.json"),
+                "symmetric": True,
+                "frame": "base",
+            },
+        )
+        # same targets seen from the fingertip: errors expressed in EE axes (frame="ee")
+        grasp_err_ee = ObsTerm(
+            func=grasp_err_obs,
+            params={
+                "offset_path": os.path.join(os.path.dirname(__file__), "grasp_offset.json"),
+                "symmetric": True,
+                "frame": "ee",
+            },
+        )
+        # EE -> place target above the box center (3D)
+        place_err_ee = ObsTerm(
+            func=place_err_obs,
+            params={"offset_path": os.path.join(os.path.dirname(__file__), "place_offset.json"), "frame": "ee"},
+        )
 
         def __post_init__(self):
             self.enable_corruption = False

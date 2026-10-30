@@ -1,0 +1,52 @@
+python - <<'PY'
+from importlib.metadata import version
+for pkg in ["isaacsim", "isaacsim-core", "isaacsim-app"]:
+	try:
+		print(f"{pkg}: {version(pkg)}")
+	except Exception:
+		pass
+PY
+
+echo
+echo "========== IsaacLab =========="
+cd ~/IsaacLab 2>/dev/null && {
+	echo "Tag/Commit: $(git describe --tags --always)"
+	echo "Branch: $(git branch --show-current)"
+	git log -1 --oneline
+}
+
+echo
+echo "========== IsaacLab-Arena =========="
+cd ~/IsaacLab-Arena 2>/dev/null && {
+	echo "Tag/Commit: $(git describe --tags --always)"
+	echo "Branch: $(git branch --show-current)"
+	git log -1 --oneline
+}
+
+echo
+echo "========== LeRobot =========="
+python - <<'PY'
+try:
+	import lerobot
+	print("LeRobot:", lerobot.__version__)
+	print("Path:", lerobot.__file__)
+except Exception as e:
+	print("LeRobot import failed:", e)
+PY
+
+pip install onnxruntime==1.23.2 lightwheel-sdk==1.0.1 vuer[all]==0.0.70 qpsolvers==4.8.1
+
+pip install \
+click==8.1.7 \
+psutil==5.9.8 \
+typing_extensions==4.12.2
+
+python -c "import isaaclab_arena; print('IsaacLab ArenaOK')"
+
+
+
+./isaaclab.sh -p scripts/reinforcement_learning/rsl_rl/train.py \
+--task Isaac-Ant-v0 \
+--headless \
+--seed 42 \
+--run_name ant_baseline

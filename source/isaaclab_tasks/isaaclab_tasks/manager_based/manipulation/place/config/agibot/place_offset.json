@@ -1,0 +1,35 @@
+{
+  "h": 0.25318580865859985,
+  "h_std": 0.03355821967124939,
+  "xy_mean": [
+    0.016632389277219772,
+    -0.011222911067306995
+  ],
+  "xy_std": [
+    0.06590169668197632,
+    0.025304587557911873
+  ],
+  "n_used": 20,
+  "sources": [
+    "team10_lee_s3.hdf5/demo_0@416",
+    "team10_lee_s3.hdf5/demo_1@499",
+    "team10_lee_s3.hdf5/demo_2@651",
+    "team10_lee_s3.hdf5/demo_3@522",
+    "team10_lee_s3.hdf5/demo_4@564",
+    "team10_lee_s3.hdf5/demo_5@422",
+    "team10_lee_s3.hdf5/demo_6@473",
+    "team10_lee_s3.hdf5/demo_7@551",
+    "team10_lee_s3.hdf5/demo_8@459",
+    "team10_lee_s3.hdf5/demo_9@510",
+    "team10_lee_s3.hdf5/demo_10@596",
+    "team10_lee_s3.hdf5/demo_11@638",
+    "team10_lee_s3.hdf5/demo_12@566",
+    "team10_lee_s3.hdf5/demo_13@370",
+    "team10_lee_s3.hdf5/demo_14@514",
+    "team10_lee_s3.hdf5/demo_15@422",
+    "team10_lee_s3.hdf5/demo_16@538",
+    "team10_lee_s3.hdf5/demo_17@561",
+    "team10_lee_s3.hdf5/demo_18@461",
+    "team10_lee_s3.hdf5/demo_19@479"
+  ]
+}

@@ -24,6 +24,18 @@ gym.register(
         "robomimic_bc_cfg_entry_point": (
             f"{agents.__name__}:robomimic/bc_rnn_low_dim.json"
         ),
+        # baseline + grasp_err (6D) observation
+        "robomimic_bc_grasperr_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_rnn_low_dim_grasperr.json"
+        ),
+        # baseline + grasp_err in EE axes (6D)
+        "robomimic_bc_ge_ee_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_rnn_low_dim_ge_ee.json"
+        ),
+        # baseline + grasp_err and place_err in EE axes (6D + 3D)
+        "robomimic_bc_ge_ee_place_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_rnn_low_dim_ge_ee_place.json"
+        ),
     },
     disable_env_checker=True,
 )

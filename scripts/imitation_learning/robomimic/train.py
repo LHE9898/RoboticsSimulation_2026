@@ -85,8 +85,13 @@ from robomimic.utils.log_utils import DataLogger, PrintLogger
 
 # Isaac Lab imports (needed so that environment is registered)
 import isaaclab_tasks  # noqa: F401
-import isaaclab_tasks.manager_based.locomanipulation.pick_place  # noqa: F401
-import isaaclab_tasks.manager_based.manipulation.pick_place  # noqa: F401
+
+# pick_place tasks (GR1T2 / G1) require pin-pink; skip them if it is not available
+try:
+    import isaaclab_tasks.manager_based.locomanipulation.pick_place  # noqa: F401
+    import isaaclab_tasks.manager_based.manipulation.pick_place  # noqa: F401
+except ImportError as e:
+    print(f"[WARN] Skipping pick_place task registration: {e}")
 
 
 def normalize_hdf5_actions(config: Config, log_dir: str) -> str:
@@ -402,6 +407,11 @@ def main(args: argparse.Namespace):
     if args.epochs is not None:
         config.train.num_epochs = args.epochs
 
+    if args.seed is not None:
+        config.train.seed = args.seed
+        # keep runs with different seeds in separate log folders
+        config.experiment.name = f"{config.experiment.name}_seed{args.seed}"
+
     # change location of experiment directory
     config.train.output_dir = os.path.abspath(os.path.join("./logs", args.log_dir, args.task))
 
@@ -455,6 +465,13 @@ if __name__ == "__main__":
             "Optional: Number of training epochs. If specified, overrides the number of epochs from the JSON training"
             " config."
         ),
+    )
+
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Optional: training seed. If specified, overrides train.seed from the JSON training config.",
     )
 
     args = parser.parse_args()
