@@ -5,6 +5,10 @@
 # Each stage can be run on its own; "all" runs generate..eval in order.
 # Second round (fingertip-frame errors, imitation_pland_v2.md):
 #   bash tools_c/run_c_pipeline.sh [convert_rel|smoke_rel|train_rel|eval_rel|rel]
+# Gripper event classifier (results/event_clf/plan_B.md):
+#   bash tools_c/run_c_pipeline.sh [convert_evt|smoke_evt|train_evt|calib_evt|eval_evt|evt]
+# evr with the geometric close rule (results/event_clf/plan_XY.md):
+#   bash tools_c/run_c_pipeline.sh eval_rule
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -15,6 +19,8 @@ N_MIMIC=500  # same generation count as the earlier mimic_v2_500 run
 MIMIC=./datasets/team10_lee_s3_mimic_$N_MIMIC.hdf5
 GE=./datasets/mimic_${N_MIMIC}_ge.hdf5
 REL=./datasets/mimic_${N_MIMIC}_rel.hdf5  # same demos as $GE + grasp_err_ee, place_err_ee
+EVT=./datasets/mimic_${N_MIMIC}_evt.hdf5  # same as $REL + grip_state / grip_event_* labels (bc_event)
+AGENTS=source/isaaclab_tasks/isaaclab_tasks/manager_based/manipulation/place/config/agibot/agents/robomimic
 SEEDS="101 111"
 EPOCH=2000
 export PYTHONUNBUFFERED=1
@@ -112,6 +118,67 @@ stage_eval_rel() {
     } | tee $R/judgement_v2.md
 }
 
+stage_convert_evt() {
+    python tools_c/add_grip_event_to_hdf5.py --input $REL --output $EVT
+}
+
+stage_smoke_evt() {  # CPU only and without the simulator (train.py launches Isaac Sim)
+    for V in ready ready_inbox; do
+        CUDA_VISIBLE_DEVICES= python tools_c/smoke_bc_event.py --config $AGENTS/bc_event_$V.json --data $EVT --out /tmp/bc_event_smoke_$V
+    done
+}
+
+stage_train_evt() {
+    for SEED in $SEEDS; do
+        for ALGO in bc_event_ready bc_event_ready_inbox; do
+            echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
+                --algo $ALGO --dataset $EVT --seed $SEED
+        done
+    done
+}
+
+stage_calib_evt() {  # gripper thresholds picked on the training demos -> <run>/event_tau.json (CPU)
+    for SEED in $SEEDS; do
+        for EXP in bc_rnn_low_dim_agibot_toy2box_event_ready bc_rnn_low_dim_agibot_toy2box_event_ready_inbox; do
+            CUDA_VISIBLE_DEVICES= python tools_c/calibrate_event_tau.py --ckpt "$(latest_ckpt ${EXP}_seed$SEED)"
+        done
+    done
+}
+
+stage_eval_evt() {
+    mkdir -p ./outputs/rollouts
+    for SEED in $SEEDS; do
+        for PAIR in evr:bc_rnn_low_dim_agibot_toy2box_event_ready evi:bc_rnn_low_dim_agibot_toy2box_event_ready_inbox; do
+            OUT=./outputs/rollouts/${PAIR%%:*}_s$SEED
+            rm -rf $OUT ./videos/evt/${PAIR%%:*}_s$SEED
+            ./isaaclab.sh -p tools_c/play_record.py --task $TASK --checkpoint "$(latest_ckpt ${PAIR#*:}_seed$SEED)" \
+                --num_rollouts 100 --horizon 800 --seed 42 --headless --out_dir $OUT \
+                --video --video_length 800 --video_folder ./videos/evt/${PAIR%%:*}_s$SEED | tee $OUT.log
+        done
+    done
+    R=outputs/rollouts
+    {
+        echo "## primary: bc_event (ready) vs gepl"
+        python tools_c/judge_event.py --baseline $R/gepl_s101 $R/gepl_s111 --exp $R/evr_s101 $R/evr_s111
+        echo; echo "## secondary: ready_inbox vs ready (release)"
+        python tools_c/judge_event.py --release --baseline $R/evr_s101 $R/evr_s111 --exp $R/evi_s101 $R/evi_s111
+    } | tee $R/judgement_evt.md
+}
+
+stage_eval_rule() {  # evr + geometric close rule (results/event_clf/plan_XY.md); no retraining, evr only
+    mkdir -p ./outputs/rollouts
+    for SEED in $SEEDS; do
+        OUT=./outputs/rollouts/evrz_s$SEED
+        rm -rf $OUT ./videos/evt/evrz_s$SEED
+        ./isaaclab.sh -p tools_c/play_record.py --task $TASK --checkpoint "$(latest_ckpt bc_rnn_low_dim_agibot_toy2box_event_ready_seed$SEED)" \
+            --num_rollouts 100 --horizon 800 --seed 42 --headless --out_dir $OUT --close_rule 0.04,0.03 \
+            --video --video_length 800 --video_folder ./videos/evt/evrz_s$SEED | tee $OUT.log
+    done
+    R=outputs/rollouts
+    CUDA_VISIBLE_DEVICES= python tools_c/judge_rule.py --gepl $R/gepl_s101 $R/gepl_s111 --evr $R/evr_s101 $R/evr_s111 \
+        --exp $R/evrz_s101 $R/evrz_s111 | tee $R/judgement_rule.md
+}
+
 case "${1:-all}" in
     generate) stage_generate ;;
     convert) stage_convert ;;
@@ -124,5 +191,12 @@ case "${1:-all}" in
     train_rel) stage_train_rel ;;
     eval_rel) stage_eval_rel ;;
     rel) stage_train_rel; stage_eval_rel ;;
+    convert_evt) stage_convert_evt ;;
+    smoke_evt) stage_smoke_evt ;;
+    train_evt) stage_train_evt ;;
+    calib_evt) stage_calib_evt ;;
+    eval_evt) stage_eval_evt ;;
+    evt) stage_train_evt; stage_calib_evt; stage_eval_evt ;;
+    eval_rule) stage_eval_rule ;;
     *) echo "unknown stage: $1"; exit 1 ;;
 esac

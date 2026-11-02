@@ -83,6 +83,10 @@ from robomimic.algo import algo_factory
 from robomimic.config import Config, config_factory
 from robomimic.utils.log_utils import DataLogger, PrintLogger
 
+# project robomimic algos (registers "bc_event": GMM arm + gripper event classifier)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "tools_c"))
+import bc_event  # noqa: F401, E402
+
 # Isaac Lab imports (needed so that environment is registered)
 import isaaclab_tasks  # noqa: F401
 

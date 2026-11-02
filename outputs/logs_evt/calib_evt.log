@@ -1,0 +1,60 @@
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/roobt/miniconda3/envs/lerobot-arena/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['box_positions', 'box_orientations', 'place_err_ee', 'toy_truck_positions', 'grasp_err_ee', 'gripper_pos', 'eef_pos', 'toy_truck_orientations', 'eef_quat']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+close: 0.5: on 0.97 / early 0.03 / miss 0.00, 0.6: on 0.98 / early 0.02 / miss 0.00, 0.7: on 0.98 / early 0.02 / miss 0.00, 0.8: on 0.99 / early 0.01 / miss 0.00, 0.85: on 0.99 / early 0.01 / miss 0.00, 0.9: on 0.99 / early 0.01 / miss 0.00, 0.95: on 1.00 / early 0.00 / miss 0.00, 0.97: on 1.00 / early 0.00 / miss 0.00, 0.98: on 1.00 / early 0.00 / miss 0.00, 0.99: on 1.00 / early 0.00 / miss 0.00
+open: 0.5: on 0.97 / early 0.03 / miss 0.00, 0.6: on 0.98 / early 0.02 / miss 0.00, 0.7: on 0.98 / early 0.02 / miss 0.00, 0.8: on 0.98 / early 0.02 / miss 0.00, 0.85: on 0.98 / early 0.02 / miss 0.00, 0.9: on 0.99 / early 0.01 / miss 0.00, 0.95: on 0.99 / early 0.01 / miss 0.00, 0.97: on 0.99 / early 0.01 / miss 0.00, 0.98: on 0.99 / early 0.01 / miss 0.01, 0.99: on 0.98 / early 0.00 / miss 0.02
+tau (close, open) = [0.98, 0.97] -> /home/roobt/IsaacLab_RS/logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_seed101/20261101195759/event_tau.json
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/roobt/miniconda3/envs/lerobot-arena/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['eef_pos', 'toy_truck_orientations', 'eef_quat', 'grasp_err_ee', 'place_err_ee', 'gripper_pos', 'box_orientations', 'toy_truck_positions', 'box_positions']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+close: 0.5: on 0.99 / early 0.01 / miss 0.00, 0.6: on 1.00 / early 0.00 / miss 0.00, 0.7: on 1.00 / early 0.00 / miss 0.00, 0.8: on 1.00 / early 0.00 / miss 0.00, 0.85: on 1.00 / early 0.00 / miss 0.00, 0.9: on 1.00 / early 0.00 / miss 0.00, 0.95: on 1.00 / early 0.00 / miss 0.00, 0.97: on 1.00 / early 0.00 / miss 0.00, 0.98: on 1.00 / early 0.00 / miss 0.00, 0.99: on 1.00 / early 0.00 / miss 0.00
+open: 0.5: on 0.60 / early 0.00 / miss 0.40, 0.6: on 0.60 / early 0.00 / miss 0.40, 0.7: on 0.60 / early 0.00 / miss 0.40, 0.8: on 0.60 / early 0.00 / miss 0.40, 0.85: on 0.60 / early 0.00 / miss 0.40, 0.9: on 0.60 / early 0.00 / miss 0.40, 0.95: on 0.60 / early 0.00 / miss 0.40, 0.97: on 0.60 / early 0.00 / miss 0.40, 0.98: on 0.60 / early 0.00 / miss 0.40, 0.99: on 0.60 / early 0.00 / miss 0.40
+tau (close, open) = [0.7, 0.5] -> /home/roobt/IsaacLab_RS/logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_inbox_seed101/20261101202116/event_tau.json
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/roobt/miniconda3/envs/lerobot-arena/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['toy_truck_orientations', 'eef_quat', 'gripper_pos', 'box_orientations', 'toy_truck_positions', 'place_err_ee', 'box_positions', 'grasp_err_ee', 'eef_pos']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+close: 0.5: on 0.94 / early 0.06 / miss 0.00, 0.6: on 0.95 / early 0.05 / miss 0.00, 0.7: on 0.96 / early 0.04 / miss 0.00, 0.8: on 0.97 / early 0.03 / miss 0.00, 0.85: on 0.97 / early 0.03 / miss 0.00, 0.9: on 0.98 / early 0.02 / miss 0.00, 0.95: on 0.98 / early 0.02 / miss 0.00, 0.97: on 0.98 / early 0.02 / miss 0.00, 0.98: on 0.99 / early 0.01 / miss 0.00, 0.99: on 0.99 / early 0.00 / miss 0.01
+open: 0.5: on 0.96 / early 0.04 / miss 0.00, 0.6: on 0.96 / early 0.04 / miss 0.00, 0.7: on 0.97 / early 0.03 / miss 0.00, 0.8: on 0.97 / early 0.03 / miss 0.00, 0.85: on 0.97 / early 0.02 / miss 0.00, 0.9: on 0.97 / early 0.02 / miss 0.01, 0.95: on 0.97 / early 0.02 / miss 0.01, 0.97: on 0.98 / early 0.01 / miss 0.01, 0.98: on 0.97 / early 0.01 / miss 0.02, 0.99: on 0.97 / early 0.01 / miss 0.02
+tau (close, open) = [0.99, 0.97] -> /home/roobt/IsaacLab_RS/logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_seed111/20261101204424/event_tau.json
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/roobt/miniconda3/envs/lerobot-arena/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['eef_quat', 'eef_pos', 'box_orientations', 'place_err_ee', 'box_positions', 'grasp_err_ee', 'toy_truck_orientations', 'gripper_pos', 'toy_truck_positions']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+close: 0.5: on 0.98 / early 0.02 / miss 0.00, 0.6: on 0.99 / early 0.01 / miss 0.00, 0.7: on 0.99 / early 0.01 / miss 0.00, 0.8: on 0.99 / early 0.01 / miss 0.00, 0.85: on 1.00 / early 0.00 / miss 0.00, 0.9: on 1.00 / early 0.00 / miss 0.00, 0.95: on 1.00 / early 0.00 / miss 0.00, 0.97: on 1.00 / early 0.00 / miss 0.00, 0.98: on 1.00 / early 0.00 / miss 0.00, 0.99: on 1.00 / early 0.00 / miss 0.00
+open: 0.5: on 0.60 / early 0.00 / miss 0.40, 0.6: on 0.60 / early 0.00 / miss 0.40, 0.7: on 0.60 / early 0.00 / miss 0.40, 0.8: on 0.60 / early 0.00 / miss 0.40, 0.85: on 0.60 / early 0.00 / miss 0.40, 0.9: on 0.60 / early 0.00 / miss 0.40, 0.95: on 0.60 / early 0.00 / miss 0.40, 0.97: on 0.60 / early 0.00 / miss 0.40, 0.98: on 0.60 / early 0.00 / miss 0.40, 0.99: on 0.60 / early 0.00 / miss 0.40
+tau (close, open) = [0.95, 0.5] -> /home/roobt/IsaacLab_RS/logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_inbox_seed111/20261101210737/event_tau.json

@@ -53,6 +53,8 @@ parser.add_argument(
 )
 parser.add_argument("--enable_pinocchio", default=False, action="store_true", help="Enable Pinocchio.")
 parser.add_argument("--out_dir", type=str, required=True, help="Directory for rollout_XXX.npz files.")
+parser.add_argument("--close_rule", type=str, default=None,
+                    help="bc_event only: 'xy_max,z_max' in m; close by the EE-frame grasp-error region instead of the close head.")
 
 
 # append AppLauncher cli args
@@ -87,6 +89,8 @@ import random
 import torch
 
 import robomimic.utils.file_utils as FileUtils
+
+import bc_event  # noqa: F401  (registers the "bc_event" algo; this file's directory is on sys.path)
 import robomimic.utils.torch_utils as TorchUtils
 
 if args_cli.enable_pinocchio:
@@ -151,6 +155,7 @@ def rollout(policy, env, success_term, horizon, device):
 
         # Record trajectory
         traj["actions"].append(actions.tolist())
+        traj.setdefault("event_p", []).append(getattr(policy.policy, "last_event_p", float("nan")))
         traj["next_obs"].append(obs)
 
         # Check if rollout was successful
@@ -213,6 +218,10 @@ def main():
     for trial in range(args_cli.num_rollouts):
         print(f"[INFO] Starting trial {trial}")
         policy, _ = FileUtils.policy_from_checkpoint(ckpt_path=args_cli.checkpoint, device=device)
+        tau = bc_event.apply_event_tau(policy, args_cli.checkpoint)
+        rule = bc_event.apply_close_rule(policy, args_cli.close_rule.split(",") if args_cli.close_rule else None)
+        if tau is not None and trial == 0:
+            print(f"[INFO] bc_event gripper thresholds (close, open): {tau} | close rule (xy_max, z_max): {rule}")
         terminated, traj = rollout(policy, env, success_term, args_cli.horizon, device)
         if args_cli.video and env.recording:
             env.stop_recording()
@@ -221,6 +230,8 @@ def main():
         rec = {k: torch.stack([o[k] for o in traj["obs"]]).cpu().numpy() for k in log_keys if k in traj["obs"][0]}
         rec["actions"] = np.asarray(traj["actions"], dtype=np.float32).reshape(-1, 7)
         rec["success"] = np.array(terminated)
+        if "event_p" in traj:  # gripper event probability per step (nan for non-event policies)
+            rec["event_p"] = np.asarray(traj["event_p"], dtype=np.float32)
         np.savez_compressed(os.path.join(args_cli.out_dir, f"rollout_{trial:03d}.npz"), **rec)
         print(f"[INFO] Trial {trial}: {terminated}\n")
 

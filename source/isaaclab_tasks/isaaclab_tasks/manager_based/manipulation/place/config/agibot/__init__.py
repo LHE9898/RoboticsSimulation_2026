@@ -36,6 +36,13 @@ gym.register(
         "robomimic_bc_ge_ee_place_cfg_entry_point": (
             f"{agents.__name__}:robomimic/bc_rnn_low_dim_ge_ee_place.json"
         ),
+        # same obs, gripper as an event classifier instead of a GMM dimension (algo "bc_event", tools_c/bc_event.py)
+        "robomimic_bc_event_ready_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_event_ready.json"
+        ),
+        "robomimic_bc_event_ready_inbox_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_event_ready_inbox.json"
+        ),
     },
     disable_env_checker=True,
 )

@@ -1,0 +1,84 @@
+demos: train 400, val 100; positive rate (train) close 0.0147, open 0.0518
+  classifier epoch 1/8: loss 0.5936
+  classifier epoch 2/8: loss 0.4068
+  classifier epoch 3/8: loss 0.3765
+  classifier epoch 4/8: loss 0.3583
+  classifier epoch 5/8: loss 0.3434
+  classifier epoch 6/8: loss 0.3339
+  classifier epoch 7/8: loss 0.3212
+  classifier epoch 8/8: loss 0.3128
+  [explore] close: train on-time by tau 0.5:0.13, 0.7:0.15, 0.8:0.17, 0.9:0.22, 0.95:0.30, 0.97:0.28, 0.98:0.22, 0.99:0.11, 0.995:0.03, 0.999:0.00
+  [explore] open: train on-time by tau 0.5:0.36, 0.7:0.46, 0.8:0.60, 0.9:0.72, 0.95:0.64, 0.97:0.49, 0.98:0.37, 0.99:0.18, 0.995:0.08, 0.999:0.00
+
+## 사후 탐색 (사전 기준 아님): 기준값을 학습용 시범 400개에서 고른 경우
+
+- 선택된 기준값: 닫기 0.95, 열기 0.9 (3 step 연속). 아래는 검증 시범 100개 결과. GMM은 실행 규칙이 같으므로 위 표의 기댓값과 같다.
+
+| 사건 | 제때 | 너무 일찍 | 안 바꿈 | 바꾼 순간 거리 (중앙값): 분류기 / 실제 시범 |
+|---|---|---|---|---|
+| close | 0.33 | 0.45 | 0.21 | 잡기 목표 2.9 cm / 2.8 cm |
+| close, 너무 일찍 바꾼 경우만 (n=49) | | | | 3.4 cm / 2.8 cm |
+| open | 0.58 | 0.25 | 0.17 | 박스 중심 xy 9.0 cm / 9.2 cm |
+ROBOMIMIC WARNING(
+    No private macro file found!
+    It is recommended to use a private macro file
+    To setup, run: python /home/roobt/miniconda3/envs/lerobot-arena/lib/python3.11/site-packages/robomimic/scripts/setup_macros.py
+)
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['box_positions', 'toy_truck_positions', 'gripper_pos', 'place_err_ee', 'box_orientations', 'eef_pos', 'grasp_err_ee', 'toy_truck_orientations', 'eef_quat']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+gepl_s101 {'A1_close': (0.358, 0.622, 0.971, 0.988, 0.015), 'A2_close': (0.176, 0.381, 0.824, 0.346, 0.0, 0.273, 108.0), 'A1_open': (0.633, 0.591, 0.967, 0.955, 0.052), 'A2_open': (0.38, 0.394, 0.602, 0.236, 0.019, 0.37, 108.0), 'A3': (0.01, 0.111), 'A4_close': (0.762, 0.414, 160.0, 78.0, 0.897, 0.39), 'A4_open': (0.844, 0.723, 64.0, 30.0, 0.967, 0.588)}
+
+============= Initialized Observation Utils with Obs Spec =============
+
+using obs modality: low_dim with keys: ['box_positions', 'toy_truck_positions', 'gripper_pos', 'place_err_ee', 'box_orientations', 'eef_pos', 'grasp_err_ee', 'toy_truck_orientations', 'eef_quat']
+using obs modality: rgb with keys: []
+using obs modality: depth with keys: []
+using obs modality: scan with keys: []
+gepl_s111 {'A1_close': (0.358, 0.609, 0.971, 0.987, 0.015), 'A2_close': (0.176, 0.379, 0.824, 0.364, 0.0, 0.257, 108.0), 'A1_open': (0.633, 0.595, 0.967, 0.962, 0.052), 'A2_open': (0.38, 0.435, 0.602, 0.233, 0.019, 0.333, 108.0), 'A3': (0.01, 0.108), 'A4_close': (0.753, 0.479, 167.0, 86.0, 0.826, 0.296), 'A4_open': (0.755, 0.485, 73.0, 37.0, 0.892, 0.722)}
+# A단계 결과 (자동 생성: tools_c/event_clf_offline.py)
+
+- 검증 시범 100개 (Mimic 500개 중 고정 seed 0으로 추출). 분류기는 나머지 400개로만 학습.
+- 실행 규칙: 분류기 p>0.5 3 step 연속, GMM은 매 step 무작위 (현재 평가와 같음). 시점 허용 ±10 step.
+
+## gepl_s101
+
+| 지표 | 사건 | 분류기 | GMM | 기준 |
+|---|---|---|---|---|
+| A1 PR-AUC (양성 비율 0.015) | close | 0.358 | 0.622 | FAIL |
+| (참고) ROC-AUC | close | 0.971 | 0.988 | |
+| A1 PR-AUC (양성 비율 0.052) | open | 0.633 | 0.591 | PASS |
+| (참고) ROC-AUC | open | 0.967 | 0.955 | |
+| A2 제때 바꿈 (n=108) | close | 0.18 | 0.38 (기댓값) | FAIL |
+| (참고) 너무 일찍 / 안 바꿈 | close | 0.82 / 0.00 | 0.35 / 0.27 | |
+| A2 제때 바꿈 (n=108) | open | 0.38 | 0.39 (기댓값) | FAIL |
+| (참고) 너무 일찍 / 안 바꿈 | open | 0.60 / 0.02 | 0.24 / 0.37 | |
+| A3 먼 곳(>10 cm) 오작동 닫힘 / 에피소드 | close | 0.010 | 0.111 (기댓값) | PASS |
+| A4 rollout: 든 닫힘 대 안 든 닫힘 ROC-AUC (n=160, 든 것 78) | close | 0.762 | 0.414 | PASS |
+| (참고) 분류기 p>0.5 비율: 든 닫힘 / 안 든 닫힘 | close | 0.90 / 0.39 | | |
+| A4 rollout: 박스 안 놓기 대 밖 ROC-AUC (n=64, 안 30) | open | 0.844 | 0.723 | PASS |
+| (참고) 분류기 p>0.5 비율: 박스 안 / 밖 | open | 0.97 / 0.59 | | |
+
+## gepl_s111
+
+| 지표 | 사건 | 분류기 | GMM | 기준 |
+|---|---|---|---|---|
+| A1 PR-AUC (양성 비율 0.015) | close | 0.358 | 0.609 | FAIL |
+| (참고) ROC-AUC | close | 0.971 | 0.987 | |
+| A1 PR-AUC (양성 비율 0.052) | open | 0.633 | 0.595 | PASS |
+| (참고) ROC-AUC | open | 0.967 | 0.962 | |
+| A2 제때 바꿈 (n=108) | close | 0.18 | 0.38 (기댓값) | FAIL |
+| (참고) 너무 일찍 / 안 바꿈 | close | 0.82 / 0.00 | 0.36 / 0.26 | |
+| A2 제때 바꿈 (n=108) | open | 0.38 | 0.43 (기댓값) | FAIL |
+| (참고) 너무 일찍 / 안 바꿈 | open | 0.60 / 0.02 | 0.23 / 0.33 | |
+| A3 먼 곳(>10 cm) 오작동 닫힘 / 에피소드 | close | 0.010 | 0.108 (기댓값) | PASS |
+| A4 rollout: 든 닫힘 대 안 든 닫힘 ROC-AUC (n=167, 든 것 86) | close | 0.753 | 0.479 | PASS |
+| (참고) 분류기 p>0.5 비율: 든 닫힘 / 안 든 닫힘 | close | 0.83 / 0.30 | | |
+| A4 rollout: 박스 안 놓기 대 밖 ROC-AUC (n=73, 안 37) | open | 0.755 | 0.485 | PASS |
+| (참고) 분류기 p>0.5 비율: 박스 안 / 밖 | open | 0.89 / 0.72 | | |
+
+
