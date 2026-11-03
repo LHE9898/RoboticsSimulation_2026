@@ -14,6 +14,8 @@
 #   bash tools_c/run_c_pipeline.sh [convert_rel2|train_rel2|calib_rel2|eval_rel2|rel2]   (relative-only obs, plan_REL.md)
 #   bash tools_c/run_c_pipeline.sh eval_z2   (eez2 = EE-action checkpoints + close rule 0.04,0.02, judged against evrz)
 #   bash tools_c/run_c_pipeline.sh [train_base|eval_base]   (baseline: algo bc, 23D obs)
+# Training seed: set "seed" in the training JSON (place/config/agibot/agents/robomimic/*.json) to 101 or 111 before a train stage;
+# train.py has no --seed option. $SEEDS below only names the eval outputs / checkpoint lookups.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -61,9 +63,9 @@ print(p, torch.load(p, map_location='cpu', weights_only=False)['shape_metadata']
 stage_train() {
     for SEED in $SEEDS; do
         echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
-            --algo bc --dataset $GE --seed $SEED
+            --algo bc --dataset $GE
         echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
-            --algo bc_grasperr --dataset $GE --seed $SEED
+            --algo bc_grasperr --dataset $GE
     done
 }
 
@@ -101,7 +103,7 @@ stage_train_rel() {
     for SEED in $SEEDS; do
         for ALGO in bc_ge_ee bc_ge_ee_place; do
             echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
-                --algo $ALGO --dataset $REL --seed $SEED
+                --algo $ALGO --dataset $REL
         done
     done
 }
@@ -141,7 +143,7 @@ stage_train_evt() {
     for SEED in $SEEDS; do
         for ALGO in bc_event_ready bc_event_ready_inbox; do
             echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
-                --algo $ALGO --dataset $EVT --seed $SEED
+                --algo $ALGO --dataset $EVT
         done
     done
 }
@@ -215,7 +217,7 @@ PY
 stage_train_ee() {
     for SEED in $SEEDS; do
         echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK_EE \
-            --algo bc_event_ready --dataset $EVT_EE --seed $SEED --name bc_rnn_low_dim_agibot_toy2box_event_ready_ee
+            --algo bc_event_ready --dataset $EVT_EE --name bc_rnn_low_dim_agibot_toy2box_event_ready_ee
     done
 }
 
@@ -258,7 +260,7 @@ stage_train_rel2() {  # the two seeds train in parallel (about 4 GB GPU memory e
     mkdir -p ./outputs/logs_rel
     for SEED in $SEEDS; do
         echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK_REL \
-            --algo bc_event_ready_rel --dataset $EVT_REL --seed $SEED --name bc_rnn_low_dim_agibot_toy2box_event_ready_rel \
+            --algo bc_event_ready_rel --dataset $EVT_REL --name bc_rnn_low_dim_agibot_toy2box_event_ready_rel \
             > ./outputs/logs_rel/train_s$SEED.log 2>&1 &
     done
     wait
@@ -302,7 +304,7 @@ stage_eval_z2() {  # eez checkpoints, close rule depth tolerance 3 cm -> 2 cm (r
 stage_train_base() {  # baseline: algo bc (23D obs) on $REL; bc does not read the added obs keys, so the input equals $GE
     for SEED in $SEEDS; do
         echo n | ./isaaclab.sh -p scripts/imitation_learning/robomimic/train.py --task $TASK \
-            --algo bc --dataset $REL --seed $SEED
+            --algo bc --dataset $REL
     done
 }
 
