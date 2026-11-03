@@ -47,6 +47,38 @@ gym.register(
     disable_env_checker=True,
 )
 
+# same task, arm action in end-effector axes (mdp/ee_frame_actions.py); dataset actions via tools_c/convert_actions_ee.py
+gym.register(
+    id="Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-EEAct-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.place_toy2box_rmp_rel_env_cfg:"
+            "RmpFlowAgibotPlaceToy2BoxEEActEnvCfg"
+        ),
+        "robomimic_bc_event_ready_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_event_ready.json"
+        ),
+    },
+    disable_env_checker=True,
+)
+
+# same as EEAct, policy sees only relative observations (gripper_pos, grasp_err_ee, place_err_ee, gravity_ee)
+gym.register(
+    id="Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-EEActRel-v0",
+    entry_point="isaaclab.envs:ManagerBasedRLEnv",
+    kwargs={
+        "env_cfg_entry_point": (
+            f"{__name__}.place_toy2box_rmp_rel_env_cfg:"
+            "RmpFlowAgibotPlaceToy2BoxEEActRelEnvCfg"
+        ),
+        "robomimic_bc_event_ready_rel_cfg_entry_point": (
+            f"{agents.__name__}:robomimic/bc_event_ready_rel.json"
+        ),
+    },
+    disable_env_checker=True,
+)
+
 ##
 # Agibot Left Arm: place upright mug task, with RmpFlow
 ##

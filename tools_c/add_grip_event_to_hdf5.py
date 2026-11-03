@@ -10,6 +10,7 @@
 # File attrs: grip_event_obs_keys, grip_event_mu, grip_event_sd (normalization of [x, dx]) and <label>_pos_weight (per head).
 #
 #   python tools_c/add_grip_event_to_hdf5.py --input datasets/mimic_500_rel.hdf5 --output datasets/mimic_500_evt.hdf5
+#   (relative-only obs: --keys gripper_pos grasp_err_ee place_err_ee gravity_ee)
 import argparse
 import json
 import shutil
@@ -56,7 +57,10 @@ def labels(g):
 ap = argparse.ArgumentParser()
 ap.add_argument("--input", required=True)
 ap.add_argument("--output", required=True)
+ap.add_argument("--keys", nargs="+", default=None, help="event-net obs keys (default: gepl obs); must match the robomimic config")
 A = ap.parse_args()
+if A.keys:
+    KEYS = sorted(A.keys)
 shutil.copyfile(A.input, A.output)
 Z, S, L = [], [], {k: [] for k in LABELS}
 with h5py.File(A.output, "r+") as f:

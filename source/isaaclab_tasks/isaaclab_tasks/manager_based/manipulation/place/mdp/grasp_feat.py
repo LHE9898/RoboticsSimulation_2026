@@ -178,3 +178,18 @@ def place_err_obs(env, offset_path=DEFAULT_PLACE_OFFSET_PATH, frame="base"):
         offset_path,
         frame,
     )
+
+
+def gravity_ee_from_quat(ee_q):
+    """World down direction expressed in end-effector axes, R_E^T (0, 0, -1), shape (..., 3).
+
+    The robot base z axis is world up (place_err_from_poses relies on the same assumption).
+    """
+    return -quat2mat(ee_q)[..., 2, :]
+
+
+def gravity_ee_obs(env):
+    """Observation term: gravity direction in end-effector axes (does not depend on the object poses)."""
+    from isaaclab_tasks.manager_based.manipulation.stack import mdp as stack_mdp
+
+    return gravity_ee_from_quat(stack_mdp.ee_frame_pose_in_base_frame(env, return_key="quat"))

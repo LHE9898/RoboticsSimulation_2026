@@ -212,7 +212,7 @@ def main():
     os.makedirs(args_cli.out_dir, exist_ok=True)
     log_keys = [
         "eef_pos", "eef_quat", "gripper_pos", "toy_truck_positions", "toy_truck_orientations",
-        "box_positions", "box_orientations", "grasp_err",
+        "box_positions", "box_orientations", "grasp_err", "grasp_err_ee", "place_err_ee", "gravity_ee",
     ]
     results = []
     for trial in range(args_cli.num_rollouts):

@@ -25,7 +25,8 @@ from isaaclab.utils import configclass
 from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, ISAACLAB_NUCLEUS_DIR
 
 from isaaclab_tasks.manager_based.manipulation.place import mdp as place_mdp
-from isaaclab_tasks.manager_based.manipulation.place.mdp.grasp_feat import grasp_err_obs, place_err_obs
+from isaaclab_tasks.manager_based.manipulation.place.mdp.ee_frame_actions import RMPFlowEEFrameActionCfg
+from isaaclab_tasks.manager_based.manipulation.place.mdp.grasp_feat import grasp_err_obs, gravity_ee_obs, place_err_obs
 from isaaclab_tasks.manager_based.manipulation.stack import mdp
 from isaaclab_tasks.manager_based.manipulation.stack.mdp import franka_stack_events
 from isaaclab_tasks.manager_based.manipulation.stack.stack_env_cfg import ObjectTableSceneCfg
@@ -369,3 +370,34 @@ class RmpFlowAgibotPlaceToy2BoxEnvCfg(PlaceToy2BoxEnvCfg):
 
         self.decimation = 3
         self.episode_length_s = 30.0
+
+
+@configclass
+class RmpFlowAgibotPlaceToy2BoxEEActEnvCfg(RmpFlowAgibotPlaceToy2BoxEnvCfg):
+    """Same task, arm action [dp, w] in end-effector axes instead of base axes (mdp/ee_frame_actions.py)."""
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.actions.arm_action = RMPFlowEEFrameActionCfg(
+            asset_name="robot",
+            joint_names=["right_arm_joint.*"],
+            body_name="right_gripper_center",
+            controller=AGIBOT_RIGHT_ARM_RMPFLOW_CFG,
+            scale=1.0,
+            body_offset=RMPFlowEEFrameActionCfg.OffsetCfg(pos=[0.0, 0.0, 0.0]),
+            articulation_prim_expr="/World/envs/env_.*/Robot",
+            use_relative_mode=True,
+        )
+
+
+@configclass
+class RmpFlowAgibotPlaceToy2BoxEEActRelEnvCfg(RmpFlowAgibotPlaceToy2BoxEEActEnvCfg):
+    """EE-axes arm action + one extra policy observation, gravity_ee (world down in EE axes).
+
+    The robomimic config bc_event_ready_rel.json uses only object-relative / EE-referenced observations:
+    gripper_pos, grasp_err_ee, place_err_ee, gravity_ee (no absolute EE / truck / box poses).
+    """
+
+    def __post_init__(self):
+        super().__post_init__()
+        self.observations.policy.gravity_ee = ObsTerm(func=gravity_ee_obs)
