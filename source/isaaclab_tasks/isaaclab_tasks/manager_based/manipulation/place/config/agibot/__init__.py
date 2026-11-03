@@ -4,7 +4,23 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 import gymnasium as gym
+import importlib.util
+import os
+import sys
+
 from . import agents
+
+# Register the project robomimic algo "bc_event" (tools_c/bc_event.py) when the tasks are imported, so the stock
+# scripts/imitation_learning/robomimic/play.py can load evrz/eez2 checkpoints. Shared with tools_c scripts via sys.modules.
+_BC_EVENT = os.path.join(os.path.dirname(__file__), *[".."] * 8, "tools_c", "bc_event.py")
+if "bc_event" not in sys.modules and os.path.exists(_BC_EVENT):
+    try:
+        _spec = importlib.util.spec_from_file_location("bc_event", os.path.abspath(_BC_EVENT))
+        _mod = importlib.util.module_from_spec(_spec)
+        sys.modules["bc_event"] = _mod
+        _spec.loader.exec_module(_mod)
+    except ImportError:  # robomimic not installed in this environment
+        sys.modules.pop("bc_event", None)
 
 ##
 # Register Gym environments.

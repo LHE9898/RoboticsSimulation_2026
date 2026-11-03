@@ -1,0 +1,4 @@
+# Weights: only the two final models (eez2, training seeds 101 and 111) are uploaded
+logs/**/*.pth
+!logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-EEAct-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_ee_seed101/20261102154514/models/model_eez2.pth
+!logs/robomimic/Isaac-Place-Toy2Box-Agibot-Right-Arm-RmpFlow-EEAct-v0/bc_rnn_low_dim_agibot_toy2box_event_ready_ee_seed111/20261102160834/models/model_eez2.pth

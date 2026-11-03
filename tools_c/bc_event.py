@@ -51,6 +51,13 @@ class BCEventConfig(BCConfig):
         self.algo.event.hidden_dims = (256, 256)
         self.algo.event.tau = (0.5, 0.5)  # (close, open); replaced at rollout by event_tau.json (calibrate_event_tau.py)
         self.algo.event.consecutive = 3
+        # (xy_max, z_max) in m; empty = close with the close head. A play checkpoint (tools_c/make_play_ckpt.py) stores the
+        # calibrated tau and the rule here so the stock robomimic play.py runs the policy as evaluated; apply_close_rule overrides it
+        self.algo.event.close_rule = ()
+        # frame of the arm action the GMM was trained on: "base" (dataset as recorded) or "ee" (tools_c/convert_actions_ee.py).
+        # Training never reads it. A play checkpoint with "ee" makes get_action rotate the arm action back to base axes with the
+        # observed eef_quat, so the policy runs in the stock ...-RmpFlow-v0 task (same as ...-EEAct-v0 doing it in the env)
+        self.algo.event.action_frame = "base"
 
 
 class EventNet(nn.Module):
@@ -89,7 +96,10 @@ class BC_RNN_GMM_Event(BC_RNN_GMM):
         self._load_event_stats()
         self.nets = self.nets.float().to(self.device)
         self.event_tau = list(self.algo_config.event.tau)
-        self.close_rule = None  # (xy_max, z_max) in m, set by apply_close_rule
+        rule = self.algo_config.event.get("close_rule", None)  # absent in checkpoints written before this key existed
+        self.close_rule = tuple(float(v) for v in rule) if rule else None  # (xy_max, z_max) in m; apply_close_rule overrides
+        self.action_frame = self.algo_config.event.get("action_frame", "base") or "base"
+        assert self.action_frame in ("base", "ee"), self.action_frame
         self._reset_gripper()
 
     def _load_event_stats(self):
@@ -178,7 +188,30 @@ class BC_RNN_GMM_Event(BC_RNN_GMM):
             self._closed, self._run = not self._closed, 0
         self.last_event_p = p
         grip = torch.full((*arm.shape[:-1], 1), -1.0 if self._closed else 1.0, device=arm.device, dtype=arm.dtype)
+        if self.action_frame == "ee":
+            arm = ee_to_base(arm, obs_dict["eef_quat"])
         return torch.cat([arm, grip], -1)
+
+
+def quat_to_mat(q):
+    """(w, x, y, z) -> rotation matrix, shape (..., 3, 3)."""
+    q = q / torch.linalg.norm(q, dim=-1, keepdim=True)
+    w, x, y, z = q.unbind(-1)
+    return torch.stack([
+        1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y),
+        2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x),
+        2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y),
+    ], -1).reshape(*q.shape[:-1], 3, 3)
+
+
+def ee_to_base(arm, eef_quat):
+    """Arm action [dp_E, w_E] in EE axes -> [R dp_E, R w_E] in base axes (R = EE orientation in the base frame), as
+    place/mdp/ee_frame_actions.py does inside the ...-EEAct-v0 task."""
+    R = quat_to_mat(eef_quat.reshape(-1, 4).to(arm.dtype))  # [1, 3, 3]
+    out = arm.clone()
+    out[..., 0:3] = (R @ arm[..., 0:3].reshape(-1, 3, 1)).reshape(arm[..., 0:3].shape)
+    out[..., 3:6] = (R @ arm[..., 3:6].reshape(-1, 3, 1)).reshape(arm[..., 3:6].shape)
+    return out
 
 
 def apply_event_tau(policy, ckpt_path):

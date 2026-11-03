@@ -411,11 +411,6 @@ def main(args: argparse.Namespace):
     if args.epochs is not None:
         config.train.num_epochs = args.epochs
 
-    if args.seed is not None:
-        config.train.seed = args.seed
-        # keep runs with different seeds in separate log folders
-        config.experiment.name = f"{config.experiment.name}_seed{args.seed}"
-
     # change location of experiment directory
     config.train.output_dir = os.path.abspath(os.path.join("./logs", args.log_dir, args.task))
 
@@ -469,13 +464,6 @@ if __name__ == "__main__":
             "Optional: Number of training epochs. If specified, overrides the number of epochs from the JSON training"
             " config."
         ),
-    )
-
-    parser.add_argument(
-        "--seed",
-        type=int,
-        default=None,
-        help="Optional: training seed. If specified, overrides train.seed from the JSON training config.",
     )
 
     args = parser.parse_args()
